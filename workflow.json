@@ -1,0 +1,413 @@
+{
+  "name": "Domain Expander",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Sei l’Agente di Comprensione Semantica per il workflow n8n “Prompt Orchestrator”.  \nIl tuo compito è analizzare ogni messaggio dell’utente (fornito nel campo \"input\") e restituire **esclusivamente** un oggetto JSON con questa struttura:\n\n{\n  \"question\":   \"<la domanda dell’utente, riformulata in modo chiaro e completo>\",\n  \"domain\":     \"<uno dei valori consentiti: code | creative_writing | marketing | design | project_management | business_validation | unknown>\",\n  \"confidence\": <intero da 0 a 100 che indica la tua sicurezza sulla correttezza del dominio scelto>\n}\n\n### Regole operative\n1. Analizza il contenuto semantico, ignorando refusi o linguaggio informale/dialettale.  \n2. Se la richiesta tocca più ambiti, identifica il **dominio prevalente** rispetto all’obiettivo implicito.  \n3. Se la domanda non rientra in nessuno dei sei domini o non è presente una vera domanda, imposta  \n   \"domain\": \"unknown\" e \"confidence\": 0.  \n4. NON aggiungere alcun testo fuori dallo schema JSON (niente spiegazioni, saluti, codici Markdown, ecc.).  \n5. Mantieni l’ortografia corretta e usa l’italiano standard nella proprietà \"question\".\n\n### Elenco domini consentiti\n- code : Scrittura di codice e questioni tecniche di programmazione  \n- creative_writing : Produzione di testi narrativi, poetici o sceneggiature  \n- marketing : Copy, strategia e comunicazione di marketing  \n- design : UX/UI, grafica o ideazione visiva  \n- project_management : Pianificazione e gestione di progetti  \n- business_validation : Analisi, validazione o strategia di idee d’impresa\n\n### Esempio\n**Input dell’utente**  \n«Puoi scrivermi un’analisi SWOT per una startup che fa meal-kit vegani?»\n\n**Output dell’agente**  \n{\n  \"question\": \"Qual è un’analisi SWOT per una startup che offre meal-kit vegani?\",\n  \"domain\": \"business_validation\",\n  \"confidence\": 94\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        80,
+        -200
+      ],
+      "id": "d2f7e794-7b21-4caf-901c-e35d7fddf7be",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        68,
+        20
+      ],
+      "id": "d99f3a46-dbcc-4f00-a766-ee97ca41b483",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        -200
+      ],
+      "id": "1c81e6bd-eef6-49dc-9ee2-5dfbde03e4d4",
+      "name": "When chat message received",
+      "webhookId": "5a180c8b-cc57-4af9-9a3f-94261dcf4e2b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c248e7a-0fa4-4f24-80df-45a989300ecc",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        860,
+        -200
+      ],
+      "id": "636efc58-7c6a-4374-91e7-6cbca1ac99f2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Estrae la stringa JSON dal campo \"output\"\nconst rawOutput = $json[\"output\"];\n\n// Effettua il parsing della stringa JSON annidata\nconst parsed = JSON.parse(rawOutput);\n\n// Restituisce le tre chiavi come oggetto\nreturn [\n  {\n    json: {\n      question: parsed.question,\n      domain: parsed.domain,\n      confidence: parsed.confidence\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -200
+      ],
+      "id": "b214a5d9-f4d5-40ef-8c16-d0b50d18af99",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d4993bfd-7c87-47ed-9d87-0f6595bc3019",
+              "name": "Response",
+              "value": "=Non sono sicuro di aver capito la domanda, puoi riformulare? Il dominio risultante è  {{ $json.domain }}  ,  con una Confidence dello {{ $json.confidence }}  %",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        40
+      ],
+      "id": "b6e3d983-9e25-4270-80d8-d8f3928c2e85",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "If confidence < 70 I'll ask the user to rephrase",
+        "height": 260,
+        "width": 360
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -20
+      ],
+      "id": "a055d6e5-07f0-41d8-a122-1656c019438b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "code",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0b66d0c9-570b-44d7-980d-4d71ec920dc4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "16945bf2-2ca2-40a4-9562-d7eac34fc6a1",
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "creative_writing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "29b4cd0f-fd65-4df1-9dba-938e96d762d9",
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "marketing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "99023cfd-5d74-4a3a-95b2-3a1db027622a",
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "design",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c2b3d308-5898-4eee-9fea-ca4d121d7460",
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "project_management ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b370a2c0-2fd8-42cf-88ad-5e0c45f38f2a",
+                    "leftValue": "={{ $json.domain }}",
+                    "rightValue": "business_validation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1160,
+        -500
+      ],
+      "id": "750359ca-075b-4177-b206-67ec969d5d39",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1340,
+        -1040
+      ],
+      "id": "8f428156-a3ee-4150-a276-200eb07d01b5",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "## Code Branch",
+        "height": 260,
+        "width": 340
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        -1180
+      ],
+      "id": "09bdc65a-5018-4da9-888e-db9456fb21ca",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "16fc9b24-db5e-4e1e-ba29-856984383e6d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
+  },
+  "id": "KUoU1prfobe7iPud",
+  "tags": []
+}
