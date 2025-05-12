@@ -4,7 +4,7 @@
     {
       "parameters": {
         "options": {
-          "systemMessage": "Sei l’Agente di Comprensione Semantica per il workflow n8n “Prompt Orchestrator”.  \nIl tuo compito è analizzare ogni messaggio dell’utente (fornito nel campo \"input\") e restituire **esclusivamente** un oggetto JSON con questa struttura:\n\n{\n  \"question\":   \"<la domanda dell’utente, riformulata in modo chiaro e completo>\",\n  \"domain\":     \"<uno dei valori consentiti: code | creative_writing | marketing | design | project_management | business_validation | unknown>\",\n  \"confidence\": <intero da 0 a 100 che indica la tua sicurezza sulla correttezza del dominio scelto>\n}\n\n### Regole operative\n1. Analizza il contenuto semantico, ignorando refusi o linguaggio informale/dialettale.  \n2. Se la richiesta tocca più ambiti, identifica il **dominio prevalente** rispetto all’obiettivo implicito.  \n3. Se la domanda non rientra in nessuno dei sei domini o non è presente una vera domanda, imposta  \n   \"domain\": \"unknown\" e \"confidence\": 0.  \n4. NON aggiungere alcun testo fuori dallo schema JSON (niente spiegazioni, saluti, codici Markdown, ecc.).  \n5. Mantieni l’ortografia corretta e usa l’italiano standard nella proprietà \"question\".\n\n### Elenco domini consentiti\n- code : Scrittura di codice e questioni tecniche di programmazione  \n- creative_writing : Produzione di testi narrativi, poetici o sceneggiature  \n- marketing : Copy, strategia e comunicazione di marketing  \n- design : UX/UI, grafica o ideazione visiva  \n- project_management : Pianificazione e gestione di progetti  \n- business_validation : Analisi, validazione o strategia di idee d’impresa\n\n### Esempio\n**Input dell’utente**  \n«Puoi scrivermi un’analisi SWOT per una startup che fa meal-kit vegani?»\n\n**Output dell’agente**  \n{\n  \"question\": \"Qual è un’analisi SWOT per una startup che offre meal-kit vegani?\",\n  \"domain\": \"business_validation\",\n  \"confidence\": 94\n}\n"
+          "systemMessage": "Sei l’Agente di Comprensione Semantica per il workflow n8n “Prompt Orchestrator”.  \nIl tuo compito è analizzare ogni messaggio dell’utente (fornito nel campo \"input\") e restituire **esclusivamente** un oggetto JSON con questa struttura:\n\n{\n  \"question\":   \"<la domanda dell’utente, riformulata in modo chiaro e completo>\",\n  \"domain\":     \"<uno dei valori consentiti: code | creative_writing | marketing | design | project_management | business_validation | unknown>\",\n  \"confidence\": <intero da 0 a 100 che indica la tua sicurezza sulla correttezza del dominio scelto> castato in Intero\n}\n\n### Regole operative\n1. Analizza il contenuto semantico, ignorando refusi o linguaggio informale/dialettale.  \n2. Se la richiesta tocca più ambiti, identifica il **dominio prevalente** rispetto all’obiettivo implicito.  \n3. Se la domanda non rientra in nessuno dei sei domini o non è presente una vera domanda, imposta  \n   \"domain\": \"unknown\" e \"confidence\": 0.  \n4. NON aggiungere alcun testo fuori dallo schema JSON (niente spiegazioni, saluti, codici Markdown, ecc.).  \n5. Mantieni l’ortografia corretta e usa l’italiano standard nella proprietà \"question\".\n\n### Elenco domini consentiti\n- code : Scrittura di codice e questioni tecniche di programmazione  \n- creative_writing : Produzione di testi narrativi, poetici o sceneggiature  \n- marketing : Copy, strategia e comunicazione di marketing  \n- design : UX/UI, grafica o ideazione visiva  \n- project_management : Pianificazione e gestione di progetti  \n- business_validation : Analisi, validazione o strategia di idee d’impresa\n\n### Esempio\n**Input dell’utente**  \n«Puoi scrivermi un’analisi SWOT per una startup che fa meal-kit vegani?»\n\n**Output dell’agente**  \n{\n  \"question\": \"Qual è un’analisi SWOT per una startup che offre meal-kit vegani?\",\n  \"domain\": \"business_validation\",\n  \"confidence\": 94\n}\n"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -20,9 +20,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "gpt-4.1-nano",
+          "value": "gpt-4.1-mini",
           "mode": "list",
-          "cachedResultName": "gpt-4.1-nano"
+          "cachedResultName": "gpt-4.1-mini"
         },
         "options": {}
       },
@@ -246,7 +246,7 @@
                   {
                     "id": "c2b3d308-5898-4eee-9fea-ca4d121d7460",
                     "leftValue": "={{ $json.domain }}",
-                    "rightValue": "project_management ",
+                    "rightValue": "project_management",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -295,13 +295,23 @@
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1340,
-        -1040
+        1820,
+        -1020
       ],
       "id": "8f428156-a3ee-4150-a276-200eb07d01b5",
       "name": "Edit Fields1"
@@ -309,17 +319,655 @@
     {
       "parameters": {
         "content": "## Code Branch",
-        "height": 260,
-        "width": 340
+        "height": 180,
+        "width": 1200
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1140,
-        -1180
+        1640,
+        -1060
       ],
       "id": "09bdc65a-5018-4da9-888e-db9456fb21ca",
       "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-CODE*, a senior prompt-engineering assistant specialised in software-development tasks.\n\nGOAL  \nTransform the raw request provided below into a crystal-clear coding prompt that follows current best practices.\n\nCHECKLIST  \n1. **Language & requirements** – spell-out the programming language; list libraries / versions / frameworks (ask the user only if missing).  \n2. **Starting stub** – include a short code skeleton or an initial keyword (e.g. “import ” for Python, “SELECT ” for SQL).  \n3. **Role & output format** – instruct the assistant to return *only* the code inside a Markdown block, unless the user explicitly asks for explanations.  \n4. **Decompose complex tasks** – if the task is non-trivial, add a brief “Plan / Pseudocode” step **before** the final code.  \n5. **Examples / tests** – append at least one usage example or a minimal unit-test the code must satisfy.\n\nOUTPUT RULES  \n• If you have all the information → output **only** the rewritten prompt (no commentary).  \n• If key details are missing → output the section  \n\n• Se il task è più di 30 righe genera prima 5 righe di 'PLAN:' e poi il codice.\n• Attach a mini-test/unit-test or an execution example",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        -1020
+      ],
+      "id": "7833dec9-c1fe-4b34-877c-58fdf8cbbd60",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        -1020
+      ],
+      "id": "17fc3d95-1b44-4517-b94f-ed8212da1645",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        -740
+      ],
+      "id": "4f21138e-4e0f-42f0-8cb5-99a9019be005",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-CREATIVE*, a senior creative writer and prompt-engineering strategist.\n\nGOAL  \nTransform the raw request below into a clean, complete, and high-performance writing prompt — one that ensures the AI produces the intended creative text with correct style, voice, structure, and tone.\n\nCHECKLIST  \n0. **Essential Context (Must detect or infer)**  \n   → Writing Format (e.g. short story, poem, ad copy, editorial, blog post, social caption, etc.)  \n   → Topic or subject  \n   → Intended tone or audience  \n   → Optional: desired length or platform (e.g. LinkedIn post vs TikTok script)  \n   → If ≥2 are missing, ask clarifying questions (once only). Otherwise, proceed.\n\n1. **Format / Style / Voice**  \n   – Explicitly define the writing type (e.g. \"Create a 3-paragraph opinion piece...\").  \n   – Assign a voice or persona (e.g. \"Write as if you were a sarcastic Gen-Z journalist...\").  \n   – If user provides no tone, infer or mark `[TODO: tone]`.\n\n2. **Structure (If long or formal)**  \n   – For structured formats (articles, scripts, stories): define intro/body/conclusion or relevant sub-sections (e.g. Hook, CTA, Punchline, etc.)  \n   – Suggest known patterns (AIDA, PAS, STAR, 3-act) if suitable.\n\n3. **Style Examples (Optional but preferred)**  \n   – Include a `STYLE_SAMPLE:` if needed, or refer to a specific tone (“in the style of The Onion / Apple / The New Yorker”).  \n   – Mention platform-adaptive formatting if relevant (e.g. \"Twitter thread\", \"Instagram caption\").\n\n4. **Creative Angle / Constraint**  \n   – Add one creative twist, angle, or limitation to avoid generic results.  \n   – Examples: rhetorical question opener, ironic reversal, 3 hashtags limit, rhyming last sentence, or absurd metaphor.\n\n5. **Output Mode**  \n   – Phase ① `OUTLINE` (optional, only if needed): bullet structure  \n   – Phase ② `DRAFT`: final text output  \n   – End after the draft. Further edits can be requested later.\n\nOUTPUT RULES  \n• Use fenced code blocks:  \n  – ` ```outline ` for structure  \n  – ` ```text ` for content  \n• Do NOT explain or comment — deliver only the rewritten prompt.  \n• If major info is missing, return:\n\nMISSING INFO:\n\nFormat (story? blog? ad?)\n\nTone or target audience?\n\nKey topic or message?\n\n<CRITICAL MINIMUM RULE:>\n• If at least two of the following are provided:\n  - audience (who you're talking to)\n  - product/service (what you're offering)\n  - asset type (what you're creating)\n→ THEN proceed. Do not ask further questions. If needed, insert [TODO: …] placeholders.\n\nOnly ask clarification once if fewer than 2 of the 3 are given.",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        -740
+      ],
+      "id": "42fd2695-1fdc-4860-ad9f-7ea0f5c697ac",
+      "name": "OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        -740
+      ],
+      "id": "85ec883e-0b37-496d-912a-2c268778d934",
+      "name": "OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Creative Writing",
+        "height": 180,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        -780
+      ],
+      "id": "ca208841-6bb1-4872-a469-2db750e6ca66",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        -520
+      ],
+      "id": "05c4815c-368f-4c39-b1b6-2a0d0de3cf44",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-MARKETING*, a senior conversion copywriter and prompt-engineering strategist.\n\nGOAL  \nConvert the raw request below into a bullet-proof marketing prompt that makes the AI generate persuasive, on-brand content perfectly targeted to the intended audience.\n\nCHECKLIST  \n0. **Critical Minimum Inputs**  \n   Need at least 2 of 3:  \n   • Target audience / persona  \n   • Core offer or product/service  \n   • Desired asset type (email, ad, landing page, GTM plan, etc.)  \n   – If <2 → ask one clarification round, then proceed.  \n   – Otherwise → proceed immediately.\n\n1. **Asset Type & Channel**  \n   – Explicitly state the format (LinkedIn post, Facebook carousel, 30-sec radio script, quarterly marketing plan…).  \n   – Mention channel constraints (character limits, mobile-first, etc.) if relevant.\n\n2. **Copy Framework**  \n   – If the user named none, pick the best fit (AIDA, PAS, 4 Ps, Before-After-Bridge, etc.) and declare it.  \n   – Outline section names inside the prompt so the AI structures its output.\n\n3. **Audience Segmentation & Personalisation**  \n   – Embed persona details: demographics, pain points, goals, buying stage.  \n   – Insert missing info as `[TODO: audience detail]` placeholders rather than blocking.\n\n4. **Brand Voice & Tone**  \n   – Preserve any voice guidelines given (e.g. witty Gen-Z, authoritative B2B, luxury minimal).  \n   – If none supplied, prompt the user in clarifications or insert `[TODO: tone]`.\n\n5. **Key Messages / Offers**  \n   – List mandatory elements (USP, social proof, discount, CTA, hashtags, legal footers).  \n   – Ensure they appear in the same or adapted order.\n\n6. **Data & Context (Optional but powerful)**  \n   – Include past KPIs, market data, seasonality, competitor angles if provided.  \n   – Otherwise leave `[TODO: metric / data point]`.\n\n7. **Output Phases**  \n   – Phase ① `OUTLINE` → bullet skeleton of sections/headlines.  \n   – Phase ② `COPY`    → final polished asset.  \n   – Stop after COPY; refinements happen in a future round.\n\nOUTPUT RULES  \n• Use fenced blocks:  \n  – ` ```outline ` for the skeleton  \n  – ` ```copy `    for the finished text  \n• No meta commentary.  \n• If vital details still missing after the single clarification round, return:\n\nMISSING INFO:\n\naudience?\n\nproduct/offer?\n\nasset type?",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        -520
+      ],
+      "id": "12409f61-d241-41d9-a9a1-d9ca7367caa8",
+      "name": "OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        -520
+      ],
+      "id": "bc863fdd-1434-400e-b84c-f4194167fb81",
+      "name": "OpenAI5",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        -280
+      ],
+      "id": "01f61dc2-c188-41a8-9a51-237902412fe0",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-DESIGN*, a senior product and visual design strategist.\n\nGOAL  \nTransform the user’s raw request into a detailed, professional design prompt. The resulting prompt should guide an AI (text-based or image-based) to generate visual concepts or descriptions that are usable, aesthetically aligned, and purpose-driven.\n\nCHECKLIST  \n1. **Set the Design Role and Task**  \n   – Define the expected output clearly (e.g. \"Design a mobile app interface\", \"Generate a logo concept\", \"Describe a hero section for a landing page\").  \n   – Assign a creative role to the assistant if missing (e.g. “You are a UX designer specializing in accessibility”).  \n   – If asset type is unclear, insert `[TODO: define design asset type]` but do *not* stop the prompt.\n\n2. **Include Brand, Product or Purpose Context**  \n   – Include what the design is for (product/service/brand), and describe it.  \n   – Mention values (e.g. eco-sustainability, elegance, performance).  \n   – If not given, infer from prompt or use placeholder `[TODO: describe product/brand context]`.\n\n3. **Target Audience and Device**  \n   – Mention the primary users and device types (mobile, desktop, smartwatch, print).  \n   – If not supplied, default to “general users on mobile” or include `[TODO: target audience]`.\n\n4. **Visual Style and Reference Preferences**  \n   – If specified, include:  \n     • Desired aesthetic (e.g. minimalist, vintage, flat design, brutalist, skeuomorphic)  \n     • Color palette, typography, and brand guidelines  \n     • References (e.g. “inspired by Instagram + Google”)  \n   – If not, suggest one style or ask the assistant to generate multiple variants.\n\n5. **Functional and UX Considerations**  \n   – Include usability needs (e.g. onboarding, navigation clarity).  \n   – Include accessibility guidance if mentioned; otherwise insert:  \n     `“Follow WCAG guidelines for contrast and readability.”`  \n   – Mention screen resolution/constraints (e.g. “1080×1920 mobile layout”).\n\n6. **Output Structure and Iteration**  \n   – Phase ① `IDEAS`: 3–5 design directions or layout concepts, with pros/cons  \n   – Phase ② `DETAIL`: Focused elaboration on 1 selected idea  \n   – End after Phase ②. Refinements or critiques will come later.\n\nOUTPUT RULES  \n• Use fenced code blocks:  \n  – ` ```ideas ` → for multiple layout/direction ideas  \n  – ` ```detail ` → for elaborated design description  \n• NEVER stop the prompt due to missing info.  \n• If something’s vague or missing, insert `[TODO: …]` inline.  \n• DO NOT return follow-up questions. Continue and assume best defaults.\n\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        -280
+      ],
+      "id": "7bf9847d-5187-4f3b-8522-0c5f8acbc08c",
+      "name": "OpenAI6",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        -280
+      ],
+      "id": "12fa7cdc-3700-4723-a318-ee53d9e0a766",
+      "name": "OpenAI7",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        0
+      ],
+      "id": "ed98fd69-fda8-499d-90fc-46440f935041",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-PM*, a certified senior project manager and prompt-engineering strategist.\n\nGOAL  \nTransform the user’s raw input into a detailed, context-aware prompt for generating complete, structured project management deliverables — such as project plans, Gantt timelines, team allocations, risk tables, or stakeholder communications — tailored to the chosen methodology (Agile, Waterfall, Hybrid).\n\nCHECKLIST  \n1. **Set PM Role and Framework**  \n   – Assign the assistant a role (e.g. “You are a PMP-certified senior PM with 10+ years of experience in [domain]”).  \n   – If no methodology is specified, assume Waterfall unless the project type implies Agile (e.g. software).  \n   – Mention relevant tools or practices (e.g. Jira, Trello, Gantt, OKRs, sprint planning, Kanban board).\n\n2. **Define the Output Type and Goal**  \n   – Specify the deliverable: project plan, stakeholder map, sprint roadmap, milestone breakdown, etc.  \n   – Clarify the goal: timeline management, risk mitigation, communication planning, etc.  \n   – Never block for missing details — instead, insert `[TODO: clarify X]`.\n\n3. **Include Project Context**  \n   – Add scope, deadline, budget, priorities, team composition, client type, or known constraints.  \n   – Use placeholders only if absolutely necessary:  \n     `[TODO: define team roles]`, `[TODO: project deadline]`.\n\n4. **Structure the Output by Sections**  \n   – If a plan, split into phases (Sprints or lifecycle stages).  \n   – Include for each:  \n     • Objectives  \n     • Activities  \n     • Roles/responsibilities  \n     • Deliverables  \n     • Milestones (with dates)  \n     • Risks (with mitigation)  \n   – Prefer bullet lists or tables with clear formatting.  \n   – Default format: `Markdown`.\n\n5. **Respect Style and Scope Constraints**  \n   – If formal: “Format like a PMI project charter or business memo.”  \n   – If executive: “Keep it concise, results-focused, bullet-point only.”  \n   – Include explicit exclusions:  \n     e.g. “Do not include post-launch maintenance,” “Skip infrastructure planning.”\n\n6. **Phased Output**  \n   – Phase ① → `STRUCTURE`: high-level project breakdown  \n   – Phase ② → `PLAN`: detailed content  \n   – Stop after PLAN; review/refine loops occur in future turns.\n\nOUTPUT RULES  \n• Use fenced code blocks:  \n  – ` ```structure ` → for outline  \n  – ` ```plan ` → for complete structured content  \n• Do NOT request more info — generate the prompt using best guesses or `[TODO]`  \n• Do NOT include commentary or meta-analysis  \n• Always include clear section titles and formatting.\n\nExample Output (if user said: “Plan the development of a mobile app in 3 months”)\nstructure\nCopia\nModifica\n• Methodology: Agile Scrum  \n• Duration: 3 months  \n• Objective: Build and deploy MVP of a mobile budgeting app  \n• Team: 3 devs, 1 designer, 1 PO  \n• Deliverables: Login, dashboard, transactions, analytics, settings  \n• Sprint structure: 6 × 2-week sprints  \nplan\nCopia\nModifica\n**Sprint 1**  \n- 🧩 Goals: set up repo, CI/CD, onboarding  \n- 📋 Tasks: tech stack setup, design system exploration  \n- 🎯 Milestone: first commit + UI prototype  \n- ⚠️ Risk: unclear requirements → Mitigation: backlog grooming with PO\n\n[...]\n\n**Sprint 6**  \n- Final UAT and deployment  \n- Release notes draft  \n- Client walkthrough and feedback  ",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        0
+      ],
+      "id": "2f8912e0-7192-4241-8ede-2fda9c89eba2",
+      "name": "OpenAI8",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        0
+      ],
+      "id": "5b2e4792-e76b-425f-be65-0056618645d9",
+      "name": "OpenAI9",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e52f5ae-9f6d-44a9-8cc7-88aa277d3350",
+              "name": "question",
+              "value": "={{ $json.question }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        220
+      ],
+      "id": "481f440c-5bf7-47bb-b7c7-d06190ebf703",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO-2025-04-14"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are *PromptExpander-BIZVAL*, a senior startup strategist and validation coach.\n\nGOAL  \nTransform the raw input below into a complete, structured prompt that allows the AI to analyse, stress-test, and refine a business idea using standard strategic frameworks and real-world investor/customer thinking.\n\nCHECKLIST  \n1. **Define the Validation Objective**  \n   – Set the goal: Is it testing feasibility, market fit, differentiation, risk, or overall viability?  \n   – Mention frameworks to use (e.g. SWOT, PESTEL, Lean Canvas, UVP, etc.).  \n   – If none are mentioned, default to:  \n     - SWOT  \n     - Competitor Comparison  \n     - Assumption List + Testing Strategy\n\n2. **Contextualise the Business Idea**  \n   – Include as much detail as available: product/service, audience, pricing, channel, innovation.  \n   – Add `[TODO: missing info]` where necessary — but **do not pause** the prompt.\n\n3. **Structure the Output into Distinct Sections**  \n   – Label each section clearly:  \n     • `SWOT Analysis`  \n     • `Competitor Analysis`  \n     • `Core Assumptions & Validation Plan`  \n     • `Unique Value Proposition`  \n     • `Risks & Failure Modes`  \n     • `Investor/Customer Perspectives`  \n   – Allow the AI to skip unused sections (if not in scope).\n\n4. **Encourage Simulation of Multiple Viewpoints**  \n   – Prompt the assistant to act as:  \n     • A skeptical investor  \n     • An early adopter customer  \n     • A domain consultant  \n   – Use chained responses when valuable:  \n     e.g. “First as a critic, then as an advocate”.\n\n5. **Output Format and Length**  \n   – Phase ① `STRUCTURE`: outline of how the analysis will be broken down  \n   – Phase ② `EVALUATION`: full content under each section  \n   – Default to Markdown formatting with bullet points and short paragraphs  \n   – No additional commentary or preambles; just return usable analysis\n\nOUTPUT RULES  \n• Use fenced blocks:  \n  – ` ```structure ` → breakdown of tasks  \n  – ` ```evaluation ` → final output  \n• Do NOT ask follow-up questions. Use `[TODO: ...]` inline if inputs are vague.  \n• DO NOT break the output even if sections are partial or speculative.\n\n Sample Output (from input like “I want to build an AI-powered fitness mirror”)\nstructure\nCopia\nModifica\n1. SWOT Analysis  \n2. Identify 3 competitors and compare offerings  \n3. List core assumptions and propose validation methods  \n4. Define the UVP  \n5. Simulate investor and customer viewpoints  \nevaluation\nCopia\nModifica\n**SWOT Analysis**\n- Strengths: personalized real-time feedback; premium tech appeal  \n- Weaknesses: high unit cost; reliance on stable Wi-Fi  \n- Opportunities: smart home integration; influencer marketing  \n- Threats: cheaper fitness apps; hardware returns\n\n**Competitor Comparison**\n- Mirror.co: sleek design, big influencer budget, lacks dietary coaching  \n- Tempo.fit: real weights + AI, high price, logistics complex  \n- Apple Fitness+: software only, lower cost, high trust  \n→ Ours combines hardware + personalised nutrition → key differentiator\n\n**Assumptions & Tests**\n1. Users are willing to pay >$1,000 upfront → Test with a landing page + pricing options  \n2. Buyers value personalised nutrition integration → Test via survey  \n3. Mirrors can be reliably shipped and returned → Pilot with 10 units in one city\n\n[...]\n\n**Investor POV**  \n“What is your CAC and how scalable is the hardware?”  \n**Customer POV**  \n“Will this replace my gym? What if it breaks?”",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2040,
+        220
+      ],
+      "id": "6061fec2-424f-472b-85cb-0e553f0dc11c",
+      "name": "OpenAI10",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.message.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2400,
+        220
+      ],
+      "id": "d14e0224-e88a-4c08-86e1-7353986c4637",
+      "name": "OpenAI11",
+      "credentials": {
+        "openAiApi": {
+          "id": "plhaDFB8QqighP3l",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Marketing",
+        "height": 180,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        -540
+      ],
+      "id": "297e4995-685d-4a70-afc0-2d0cba2a8256",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Design\n",
+        "height": 180,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        -300
+      ],
+      "id": "749fe13d-7ba3-4b3e-b4c3-24f8ef85e415",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Project Management",
+        "height": 180,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        -40
+      ],
+      "id": "f1eae515-87f5-48b6-8d70-8911d633f54f",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Business Validation",
+        "height": 180,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        200
+      ],
+      "id": "fcc51e1a-4de1-4fd9-ba08-9d82a7c4a41f",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        180,
+        20
+      ],
+      "id": "04fd84f3-cd3f-4ab9-a52e-7e65373af650",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "04e32a49-2e2a-4daa-b421-c4ac646722ed",
+              "name": "Response",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3260,
+        -320
+      ],
+      "id": "114994fd-68dc-4a7c-8c3d-387ddb63090c",
+      "name": "Edit Fields7"
     }
   ],
   "pinData": {},
@@ -394,6 +1042,250 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "OpenAI2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI2": {
+      "main": [
+        [
+          {
+            "node": "OpenAI3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "OpenAI4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI4": {
+      "main": [
+        [
+          {
+            "node": "OpenAI5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "OpenAI6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI6": {
+      "main": [
+        [
+          {
+            "node": "OpenAI7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "OpenAI8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI8": {
+      "main": [
+        [
+          {
+            "node": "OpenAI9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "OpenAI10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI10": {
+      "main": [
+        [
+          {
+            "node": "OpenAI11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI7": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI9": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI11": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
@@ -403,7 +1295,7 @@
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "16fc9b24-db5e-4e1e-ba29-856984383e6d",
+  "versionId": "b586ea35-1baa-40b1-a87e-98ec752d8b54",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
